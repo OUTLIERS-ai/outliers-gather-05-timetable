@@ -159,9 +159,24 @@ check("your safe_write writes to one side and swaps, rather than emptying a file
       "os.replace" in shared_source,
       "this layer's timetable and its record of what has run depend on that")
 
+# COMPARED AS TEXT, NOT AS BYTES, AND THE DIFFERENCE COST US A REAL FAILURE.
+#
+# Git rewrites line endings on checkout, so the copy in a freshly cloned repository
+# and the copy installed from this machine differ by invisible characters while
+# being the same file. Comparing bytes made these two checks pass for whoever built
+# the layer and fail for every member who cloned it -- and fail with advice
+# ("reinstall the newer one") that would have sent them chasing nothing.
+#
+# What matters here is that the two files say the same, not that they were written
+# on the same operating system.
+def _same_text(a, b):
+    norm = lambda p: p.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n").rstrip()
+    return norm(a) == norm(b)
+
+
 for name in ("crm_paths.py", "safe_write.py"):
-    same = ((CRM_ENGINE / name).read_bytes() == (ENGINE / name).read_bytes())
-    check("your %s matches the copy this layer ships" % name, same,
+    check("your %s matches the copy this layer ships" % name,
+          _same_text(CRM_ENGINE / name, ENGINE / name),
           "these are meant to be identical in every layer; reinstall the newer one")
 
 check("this layer wrote its throwaway timetable inside the throwaway CRM",
