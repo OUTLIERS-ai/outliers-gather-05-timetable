@@ -26,6 +26,10 @@ import shutil
 import sys
 from pathlib import Path
 
+# What a member types to start Python. A Mac has `python3` and no plain `python`; Windows
+# keeps `python`, exactly as before.
+PY = "python3" if sys.platform == "darwin" else "python"
+
 LAYER = 5
 LAYER_NAME = "The Timetable"
 SERIES = "Gather"
@@ -199,12 +203,19 @@ def main():
                     helptext="A short description, for you, when you read the list in "
                              "three months.")
 
+    if sys.platform == "darwin":
+        at_login_help = ("It is a LaunchAgent: a small file in your ~/Library/LaunchAgents "
+                         "folder that tells your Mac to start the timetable when you log in. "
+                         "It does not ask for an administrator password, and it puts "
+                         "nothing on your screen.")
+    else:
+        at_login_help = ("On Windows this is a logon task pointed at the copy of "
+                         "Python that has no console window. On a Mac it is a "
+                         "LaunchAgent. Neither asks for an administrator "
+                         "password, and neither puts anything on your screen.")
     at_login = ask_yes("Should it start every time you log in?",
                        default="yes",
-                       helptext="On Windows this is a logon task pointed at the copy of "
-                                "Python that has no console window. On a Mac it is a "
-                                "LaunchAgent. Neither asks for an administrator "
-                                "password, and neither puts anything on your screen.")
+                       helptext=at_login_help)
 
     written, kept = install_modules(engine_dir)
     store, machine = load_installed(engine_dir)
@@ -265,22 +276,22 @@ def main():
         if not startup_worked:
             say("  Everything else installed. Start it by hand when you want it going,")
             say("  and set it to start at login later with:")
-            say("      python timetable.py install-startup")
+            say("      %s timetable.py install-startup" % PY)
 
     say()
     say("  Now, in a terminal in that _engine folder:")
     say()
-    say("      python timetable.py run --dry-run")
+    say("      %s timetable.py run --dry-run" % PY)
     say()
     say("  That shows what today holds and starts nothing at all. Read it, then:")
     say()
-    say("      python timetable.py start")
+    say("      %s timetable.py start" % PY)
     say()
     say("  Nothing appears on screen when it starts, and nothing appears when an")
     say("  entry fires. That is the whole design. Watch it through the log and")
     say("  through:")
     say()
-    say("      python timetable.py status")
+    say("      %s timetable.py status" % PY)
     say()
     return 0
 

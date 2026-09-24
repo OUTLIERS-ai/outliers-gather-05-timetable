@@ -519,8 +519,7 @@ if machine.IS_WINDOWS:
           str(rewritten))
 else:
     check("on a Mac there is no console window to suppress, so no flags are needed",
-          machine.no_window() == {},
-          "a Mac member is not missing anything a Windows member has")
+          machine.no_window() == {})
     check("the background program is still detached from the window that started it",
           machine.detached_no_window().get("start_new_session") is True)
 
@@ -585,7 +584,9 @@ else:
 shim = machine.write_hidden_shim(root / "_state" / "shim.vbs", 'C:\\x\\y.exe "a b"', str(root))
 shim_text = shim.read_text(encoding="utf-8")
 check("the hidden launcher asks for a hidden window and waits for the command",
-      ", 0, True)" in shim_text, shim_text.strip().splitlines()[-2])
+      ", 0, True)" in shim_text,
+      # The launcher's own line names a made-up Windows program; on a Mac it is not printed.
+      shim_text.strip().splitlines()[-2] if machine.IS_WINDOWS else "")
 check("and quote marks inside the command are doubled, as that launcher requires",
       '""a b""' in shim_text)
 

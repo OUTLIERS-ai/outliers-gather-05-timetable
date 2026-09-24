@@ -35,6 +35,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# What a member types to start Python. A Mac has `python3` and no plain `python`; Windows
+# keeps `python`, exactly as before.
+PY = "python3" if sys.platform == "darwin" else "python"
+
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
@@ -84,7 +88,7 @@ def show_plan(rows, now):
         say()
         say("  Add one entry, running once a day, and watch it for a few days:")
         say()
-        say('      python timetable.py add "python gather.py collect" \\')
+        say('      %s timetable.py add "%s gather.py collect" \\' % (PY, PY))
         say('          --at 09:30 --days mon,tue,wed,thu,fri --label "Collect the list"')
         return
     # The id is never shortened to fit. It is what you type to remove or switch
@@ -152,7 +156,7 @@ def cmd_status():
     if not state["number"]:
         say()
         say("  Nothing fires while it is not running. Start it with:")
-        say("      python timetable.py start")
+        say("      %s timetable.py start" % PY)
     say()
     return 0
 
@@ -164,7 +168,7 @@ def cmd_add(argv):
     command = (loose[0] if loose else options.get("command", "")) or ""
     if not str(command).strip():
         say("  Tell me what to run, in quotes:")
-        say('      python timetable.py add "python gather.py collect" --at 09:30 --days mon')
+        say('      %s timetable.py add "%s gather.py collect" --at 09:30 --days mon' % (PY, PY))
         return 2
     if "at" not in options:
         say("  Tell me when, with --at 09:30")
@@ -205,29 +209,29 @@ def cmd_add(argv):
     if not daemon.running_number():
         say()
         say("  The background program is not running, so nothing fires yet:")
-        say("      python timetable.py start")
+        say("      %s timetable.py start" % PY)
     say()
     return 0
 
 
 def cmd_remove(argv):
     if not argv:
-        say("  Which one? Run: python timetable.py list")
+        say("  Which one? Run: %s timetable.py list" % PY)
         return 2
     if store.remove(argv[0]):
         say("  Removed %r." % argv[0])
         return 0
-    say("  There is no entry called %r. Run: python timetable.py list" % argv[0])
+    say("  There is no entry called %r. Run: %s timetable.py list" % (argv[0], PY))
     return 2
 
 
 def cmd_switch(argv, on):
     if not argv:
-        say("  Which one? Run: python timetable.py list")
+        say("  Which one? Run: %s timetable.py list" % PY)
         return 2
     entry = store.set_enabled(argv[0], on)
     if not entry:
-        say("  There is no entry called %r. Run: python timetable.py list" % argv[0])
+        say("  There is no entry called %r. Run: %s timetable.py list" % (argv[0], PY))
         return 2
     say("  %r is now switched %s." % (argv[0], "on" if on else "off"))
     if not on:
@@ -297,7 +301,7 @@ def cmd_install_startup(argv):
     say()
     if not worked:
         say("  Nothing is scheduled at login. Everything else still works: start it")
-        say("  by hand with `python timetable.py start` whenever you want it going.")
+        say("  by hand with `%s timetable.py start` whenever you want it going." % PY)
         say()
         return 1
     if machine.IS_WINDOWS:
@@ -306,27 +310,26 @@ def cmd_install_startup(argv):
         say("  difference between a timetable people keep and one they switch off.")
     elif machine.IS_MAC:
         say("  Nothing appears on screen on a Mac, because a Mac has no console")
-        say("  window for a background program to be given. You are not missing")
-        say("  anything a Windows member has.")
+        say("  window for a background program to be given.")
     say()
-    say("  To undo it:  python timetable.py install-startup --remove")
+    say("  To undo it:  %s timetable.py install-startup --remove" % PY)
     say()
     return 0
 
 
 USAGE = """timetable - run any command on a schedule, without a window
 
-  python timetable.py list
-  python timetable.py add "<command>" --at 09:30 --days mon,tue,wed,thu,fri [--label "..."]
-  python timetable.py remove <id>
-  python timetable.py enable <id>
-  python timetable.py disable <id>
-  python timetable.py run                  the loop itself, in this window
-  python timetable.py run --dry-run        what today holds, starting nothing
-  python timetable.py start                the loop, in the background, no window
-  python timetable.py stop
-  python timetable.py status
-  python timetable.py install-startup      start it every time you log in
+  %(py)s timetable.py list
+  %(py)s timetable.py add "<command>" --at 09:30 --days mon,tue,wed,thu,fri [--label "..."]
+  %(py)s timetable.py remove <id>
+  %(py)s timetable.py enable <id>
+  %(py)s timetable.py disable <id>
+  %(py)s timetable.py run                  the loop itself, in this window
+  %(py)s timetable.py run --dry-run        what today holds, starting nothing
+  %(py)s timetable.py start                the loop, in the background, no window
+  %(py)s timetable.py stop
+  %(py)s timetable.py status
+  %(py)s timetable.py install-startup      start it every time you log in
 
   add also takes:
     --minutes N     how long this one may take before it is ended. Default 45.
@@ -334,7 +337,7 @@ USAGE = """timetable - run any command on a schedule, without a window
     --shift N       how far its minute may move, either way. Default 4.
 
 Run this from the _engine folder inside your CRM.
-"""
+""" % {"py": PY}
 
 
 def main(argv):
