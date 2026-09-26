@@ -30,6 +30,16 @@ from pathlib import Path
 # keeps `python`, exactly as before.
 PY = "python3" if sys.platform == "darwin" else "python"
 
+# How starting by itself is said. On a Mac it "starts by itself when you switch on your Mac and sign in":
+# "log in" reads as needing an account (Mac build plan V3, wave s2: the Session 7 ruling on the words
+# installers print). Windows keeps its words, exactly as before.
+# The question keeps its Windows words as the first literal in the ask_yes call, because the Gather guide
+# checker (check_repo_matches_guide.py) reads the installer's questions out of this source.
+if sys.platform == "darwin":
+    AT_LOGIN_LATER = "  and set it to start by itself later with:"
+else:
+    AT_LOGIN_LATER = "  and set it to start at login later with:"
+
 LAYER = 5
 LAYER_NAME = "The Timetable"
 SERIES = "Gather"
@@ -205,7 +215,8 @@ def main():
 
     if sys.platform == "darwin":
         at_login_help = ("It is a LaunchAgent: a small file in your ~/Library/LaunchAgents "
-                         "folder that tells your Mac to start the timetable when you log in. "
+                         "folder that tells your Mac to start the timetable by itself when you "
+                         "switch on your Mac and sign in. "
                          "It does not ask for an administrator password, and it puts "
                          "nothing on your screen.")
     else:
@@ -213,7 +224,8 @@ def main():
                          "Python that has no console window. On a Mac it is a "
                          "LaunchAgent. Neither asks for an administrator "
                          "password, and neither puts anything on your screen.")
-    at_login = ask_yes("Should it start every time you log in?",
+    at_login = ask_yes("Should it start every time you log in?" if sys.platform != "darwin" else
+                       "Should it start by itself when you switch on your Mac and sign in?",
                        default="yes",
                        helptext=at_login_help)
 
@@ -275,7 +287,7 @@ def main():
         say("  " + startup_note.replace("\n", "\n  "))
         if not startup_worked:
             say("  Everything else installed. Start it by hand when you want it going,")
-            say("  and set it to start at login later with:")
+            say(AT_LOGIN_LATER)
             say("      %s timetable.py install-startup" % PY)
 
     say()

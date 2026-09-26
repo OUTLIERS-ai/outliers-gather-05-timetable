@@ -300,7 +300,8 @@ def cmd_install_startup(argv):
     say("  " + message.replace("\n", "\n  "))
     say()
     if not worked:
-        say("  Nothing is scheduled at login. Everything else still works: start it")
+        say("  Nothing is set to start by itself. Everything else still works: start it" if machine.IS_MAC
+            else "  Nothing is scheduled at login. Everything else still works: start it")
         say("  by hand with `%s timetable.py start` whenever you want it going." % PY)
         say()
         return 1
@@ -309,8 +310,8 @@ def cmd_install_startup(argv):
         say("  nothing appears on screen when you log in. That single detail is the")
         say("  difference between a timetable people keep and one they switch off.")
     elif machine.IS_MAC:
-        say("  Nothing appears on screen on a Mac, because a Mac has no console")
-        say("  window for a background program to be given.")
+        say("  Nothing appears on your screen when it runs: on a Mac, a program running in the")
+        say("  background has no window to show.")
     say()
     say("  To undo it:  %s timetable.py install-startup --remove" % PY)
     say()
@@ -329,7 +330,7 @@ USAGE = """timetable - run any command on a schedule, without a window
   %(py)s timetable.py start                the loop, in the background, no window
   %(py)s timetable.py stop
   %(py)s timetable.py status
-  %(py)s timetable.py install-startup      start it every time you log in
+  %(py)s timetable.py install-startup      %(startup)s
 
   add also takes:
     --minutes N     how long this one may take before it is ended. Default 45.
@@ -337,7 +338,10 @@ USAGE = """timetable - run any command on a schedule, without a window
     --shift N       how far its minute may move, either way. Default 4.
 
 Run this from the _engine folder inside your CRM.
-""" % {"py": PY}
+""" % {"py": PY,
+       # wave s2: on a Mac it starts "when you switch on your Mac and sign in"; Windows keeps its words
+       "startup": ("start it by itself when you switch on your Mac and sign in" if sys.platform == "darwin"
+                   else "start it every time you log in")}
 
 
 def main(argv):

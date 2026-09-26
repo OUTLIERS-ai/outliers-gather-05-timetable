@@ -449,8 +449,8 @@ def _install_launch_agent(script, work_dir, log_path):
     done = subprocess.run(["launchctl", "load", "-w", str(target)],
                           capture_output=True, text=True)
     if done.returncode == 0:
-        return True, ("Installed. %s starts the timetable every time you log in."
-                      % LAUNCH_AGENT_LABEL)
+        return True, ("Installed. %s starts the timetable by itself when you switch on your Mac "
+                      "and sign in." % LAUNCH_AGENT_LABEL)
     return False, ("launchctl refused, so NOTHING is scheduled: %s"
                    % ((done.stderr or done.stdout).strip()[:200] or "no reason given"))
 
@@ -464,7 +464,7 @@ def remove_startup():
         subprocess.run(["launchctl", "unload", str(target)],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         target.rename(target.with_suffix(".plist.removed"))
-        return True, "Removed. It will not start at login any more."
+        return True, "Removed. It will no longer start by itself when you switch on your Mac and sign in."
     if IS_WINDOWS:
         done = subprocess.run(["schtasks", "/Delete", "/F", "/TN", TASK_NAME],
                               capture_output=True, text=True, **no_window())
